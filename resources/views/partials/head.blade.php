@@ -11,5 +11,7 @@
 
 @fonts
 
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+@if (!app()->environment('testing'))
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@endif
 @fluxAppearance

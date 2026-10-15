@@ -1,5 +1,7 @@
 @assets
-@vite('resources/js/passkeys.js')
+@if (!app()->environment('testing'))
+    @vite('resources/js/passkeys.js')
+@endif
 @endassets
 
 <div

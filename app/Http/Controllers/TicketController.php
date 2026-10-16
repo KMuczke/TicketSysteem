@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TicketController extends Controller
@@ -12,7 +13,8 @@ class TicketController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::latest()->paginate(10);
+        $tickets = Ticket::with('developer')->latest()->paginate(10);
+
         return view('tickets.index', compact('tickets'));
     }
 
@@ -21,7 +23,9 @@ class TicketController extends Controller
      */
     public function create()
     {
-        return view('tickets.create');
+        $developers = User::orderBy('name')->get();
+
+        return view('tickets.create', compact('developers'));
     }
 
     /**
@@ -32,8 +36,16 @@ class TicketController extends Controller
         $validated = $request->validate([
             'naam' => 'required|string|max:255',
             'beschrijving' => 'nullable|string',
-            'status' => 'required|string|max:255',
+            'status' => 'required|string|in:open,in_behandeling,gesloten',
+            'prioriteit' => 'nullable|string|in:laag,gemiddeld,hoog,kritiek',
+            'developer_id' => 'nullable|integer|exists:users,id',
         ]);
+
+        if (! isset($validated['prioriteit'])) {
+            $validated['prioriteit'] = 'gemiddeld';
+        }
+
+        $validated['gesloten_op'] = $validated['status'] === 'gesloten' ? now() : null;
 
         Ticket::create($validated);
 
@@ -45,6 +57,8 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
+        $ticket->load('developer');
+
         return view('tickets.show', compact('ticket'));
     }
 
@@ -53,7 +67,9 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
-        return view('tickets.edit', compact('ticket'));
+        $developers = User::orderBy('name')->get();
+
+        return view('tickets.edit', compact('ticket', 'developers'));
     }
 
     /**
@@ -64,8 +80,20 @@ class TicketController extends Controller
         $validated = $request->validate([
             'naam' => 'required|string|max:255',
             'beschrijving' => 'nullable|string',
-            'status' => 'required|string|max:255',
+            'status' => 'required|string|in:open,in_behandeling,gesloten',
+            'prioriteit' => 'nullable|string|in:laag,gemiddeld,hoog,kritiek',
+            'developer_id' => 'nullable|integer|exists:users,id',
         ]);
+
+        if (! isset($validated['prioriteit'])) {
+            $validated['prioriteit'] = 'gemiddeld';
+        }
+
+        if ($validated['status'] === 'gesloten' && $ticket->status !== 'gesloten') {
+            $validated['gesloten_op'] = now();
+        } elseif ($validated['status'] !== 'gesloten') {
+            $validated['gesloten_op'] = null;
+        }
 
         $ticket->update($validated);
 

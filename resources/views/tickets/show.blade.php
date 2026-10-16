@@ -16,14 +16,33 @@
             <div>
                 <div class="text-sm font-medium text-neutral-500">{{ __('Status') }}</div>
                 <flux:badge color="{{ $ticket->status === 'gesloten' ? 'green' : ($ticket->status === 'in_behandeling' ? 'amber' : 'red') }}" size="sm">
-                    {{ $ticket->status }}
+                    {{ $ticket->statusLabel() }}
                 </flux:badge>
+            </div>
+
+            <div>
+                <div class="text-sm font-medium text-neutral-500">{{ __('Prioriteit') }}</div>
+                <flux:badge color="{{ $ticket->prioriteitKleur() }}" size="sm">
+                    {{ ucfirst($ticket->prioriteit) }}
+                </flux:badge>
+            </div>
+
+            <div>
+                <div class="text-sm font-medium text-neutral-500">{{ __('Developer') }}</div>
+                <div>{{ $ticket->developer?->name ?? __('Niet toegewezen') }}</div>
             </div>
 
             <div>
                 <div class="text-sm font-medium text-neutral-500">{{ __('Gemaakt op') }}</div>
                 <div>{{ $ticket->created_at->format('d-m-Y H:i') }}</div>
             </div>
+
+            @if ($ticket->gesloten_op)
+                <div>
+                    <div class="text-sm font-medium text-neutral-500">{{ __('Gesloten op') }}</div>
+                    <div>{{ $ticket->gesloten_op->format('d-m-Y H:i') }}</div>
+                </div>
+            @endif
 
             <div class="flex gap-3 pt-2">
                 <flux:button href="{{ route('tickets.edit', $ticket) }}" variant="primary">

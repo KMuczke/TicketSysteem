@@ -20,6 +20,8 @@
                         <th class="px-4 py-3 text-left font-medium">ID</th>
                         <th class="px-4 py-3 text-left font-medium">Naam</th>
                         <th class="px-4 py-3 text-left font-medium">Status</th>
+                        <th class="px-4 py-3 text-left font-medium">Prioriteit</th>
+                        <th class="px-4 py-3 text-left font-medium">Developer</th>
                         <th class="px-4 py-3 text-left font-medium">Acties</th>
                     </tr>
                 </thead>
@@ -30,26 +32,26 @@
                             <td class="px-4 py-3">{{ $ticket->naam }}</td>
                             <td class="px-4 py-3">
                                 <flux:badge color="{{ $ticket->status === 'gesloten' ? 'green' : ($ticket->status === 'in_behandeling' ? 'amber' : 'red') }}" size="sm">
-                                    {{ $ticket->status }}
+                                    {{ $ticket->statusLabel() }}
                                 </flux:badge>
                             </td>
                             <td class="px-4 py-3">
+                                <flux:badge color="{{ $ticket->prioriteitKleur() }}" size="sm">
+                                    {{ ucfirst($ticket->prioriteit) }}
+                                </flux:badge>
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ $ticket->developer?->name ?? '—' }}
+                            </td>
+                            <td class="px-4 py-3">
                                 <div class="flex gap-3">
-                                    <flux:button href="{{ route('tickets.show', $ticket) }}" size="sm" variant="ghost">
-                                        {{ __('Bekijk') }}
-                                    </flux:button>
-                                    <flux:button href="{{ route('tickets.edit', $ticket) }}" size="sm" variant="ghost">
-                                        {{ __('Bewerk') }}
-                                    </flux:button>
+                                    <flux:button href="{{ route('tickets.show', $ticket) }}" size="sm" variant="ghost">Bekijk</flux:button>
+                                    <flux:button href="{{ route('tickets.edit', $ticket) }}" size="sm" variant="ghost">Bewerk</flux:button>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="4" class="px-4 py-8 text-center text-neutral-500">
-                                {{ __('Geen tickets gevonden') }}
-                            </td>
-                        </tr>
+                        <tr><td colspan="6" class="px-4 py-8 text-center text-neutral-500">{{ __('Geen tickets gevonden') }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

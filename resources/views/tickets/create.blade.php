@@ -18,6 +18,22 @@
                 <option value="gesloten" @selected(old('status') === 'gesloten')>Gesloten</option>
             </flux:select>
 
+            <flux:select name="prioriteit" label="{{ __('Prioriteit') }}">
+                <option value="laag" @selected(old('prioriteit', 'gemiddeld') === 'laag')>Laag</option>
+                <option value="gemiddeld" @selected(old('prioriteit', 'gemiddeld') === 'gemiddeld')>Gemiddeld</option>
+                <option value="hoog" @selected(old('prioriteit') === 'hoog')>Hoog</option>
+                <option value="kritiek" @selected(old('prioriteit') === 'kritiek')>Kritiek</option>
+            </flux:select>
+
+            <flux:select name="developer_id" label="{{ __('Developer') }}">
+                <option value="" @selected(blank(old('developer_id')))>Niet toegewezen</option>
+                @foreach ($developers as $developer)
+                    <option value="{{ $developer->id }}" @selected((string) old('developer_id') === (string) $developer->id)>
+                        {{ $developer->name }}
+                    </option>
+                @endforeach
+            </flux:select>
+
             <div class="flex justify-end gap-3">
                 <flux:button href="{{ route('tickets.index') }}" variant="ghost">
                     {{ __('Annuleer') }}

@@ -12,7 +12,7 @@ class TicketController extends Controller
      */
     public function index()
     {
-        $tickets = Ticket::latest()->paginate(10);
+        $tickets = Ticket::with('user')->latest()->paginate(10);
         return view('tickets.index', compact('tickets'));
     }
 
@@ -35,9 +35,13 @@ class TicketController extends Controller
             'status' => 'required|string|max:255',
         ]);
 
-        Ticket::create($validated);
+        $validated['user_id'] = $request->user()->id;
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket aangemaakt.');
+        $ticket = Ticket::create($validated);
+
+        return redirect()
+            ->route('tickets.show', $ticket)
+            ->with('success', "Ticket {$ticket->ticket_number} is aangemaakt.");
     }
 
     /**

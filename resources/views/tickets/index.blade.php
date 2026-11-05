@@ -17,8 +17,10 @@
             <table class="min-w-full text-sm">
                 <thead class="bg-neutral-50 dark:bg-neutral-800">
                     <tr>
-                        <th class="px-4 py-3 text-left font-medium">ID</th>
+                        <th class="px-4 py-3 text-left font-medium">Nummer</th>
                         <th class="px-4 py-3 text-left font-medium">Naam</th>
+                        <th class="px-4 py-3 text-left font-medium">Melder</th>
+                        <th class="px-4 py-3 text-left font-medium">Aangemaakt</th>
                         <th class="px-4 py-3 text-left font-medium">Status</th>
                         <th class="px-4 py-3 text-left font-medium">Acties</th>
                     </tr>
@@ -26,8 +28,10 @@
                 <tbody>
                     @forelse ($tickets as $ticket)
                         <tr class="border-t border-neutral-200 dark:border-neutral-700">
-                            <td class="px-4 py-3">{{ $ticket->id }}</td>
+                            <td class="px-4 py-3 font-mono">{{ $ticket->ticket_number }}</td>
                             <td class="px-4 py-3">{{ $ticket->naam }}</td>
+                            <td class="px-4 py-3">{{ $ticket->user?->name ?? __('Onbekend') }}</td>
+                            <td class="px-4 py-3">{{ $ticket->created_at?->format('d-m-Y H:i') }}</td>
                             <td class="px-4 py-3">
                                 <flux:badge color="{{ $ticket->status === 'gesloten' ? 'green' : ($ticket->status === 'in_behandeling' ? 'amber' : 'red') }}" size="sm">
                                     {{ $ticket->status }}
@@ -46,7 +50,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-4 py-8 text-center text-neutral-500">
+                            <td colspan="6" class="px-4 py-8 text-center text-neutral-500">
                                 {{ __('Geen tickets gevonden') }}
                             </td>
                         </tr>

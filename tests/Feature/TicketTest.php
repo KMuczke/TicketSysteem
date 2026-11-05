@@ -37,7 +37,9 @@ class TicketTest extends TestCase
             'status' => 'open',
         ]);
 
-        $response->assertRedirect(route('tickets.index'));
+        $ticket = Ticket::firstWhere('naam', 'Printer werkt niet');
+
+        $response->assertRedirect(route('tickets.show', $ticket));
         $this->assertDatabaseHas('tickets', ['naam' => 'Printer werkt niet']);
     }
 
@@ -91,5 +93,72 @@ class TicketTest extends TestCase
 
         $this->delete(route('tickets.destroy', $ticket))->assertRedirect(route('tickets.index'));
         $this->assertDatabaseMissing('tickets', ['id' => $ticket->id]);
+    }
+
+    public function test_a_ticket_gets_a_unique_number_a_creation_date_and_a_reporter(): void
+    {
+        $user = User::factory()->create(['name' => 'Melder Man']);
+        $this->actingAs($user);
+
+        $this->post(route('tickets.store'), [
+            'naam' => 'Nieuwe melding',
+            'beschrijving' => 'Iets is kapot',
+            'status' => 'open',
+        ]);
+
+        $ticket = Ticket::firstWhere('naam', 'Nieuwe melding');
+
+        $this->assertSame('TKT-'.str_pad((string) $ticket->id, 4, '0', STR_PAD_LEFT), $ticket->ticket_number);
+        $this->assertNotNull($ticket->created_at);
+        $this->assertTrue($ticket->user->is($user));
+    }
+
+    public function test_a_reporter_sees_a_confirmation_with_the_ticket_number_after_creating(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->post(route('tickets.store'), [
+            'naam' => 'Bevestiging test',
+            'beschrijving' => 'Controle',
+            'status' => 'open',
+        ]);
+
+        $ticket = Ticket::firstWhere('naam', 'Bevestiging test');
+
+        $response->assertRedirect(route('tickets.show', $ticket));
+        $response->assertSessionHas('success', "Ticket {$ticket->ticket_number} is aangemaakt.");
+
+        $this->get(route('tickets.show', $ticket))
+            ->assertOk()
+            ->assertSee("Ticket {$ticket->ticket_number} is aangemaakt.");
+    }
+
+    public function test_ticket_numbers_are_unique(): void
+    {
+        $first = Ticket::create(['naam' => 'Eerste', 'status' => 'open']);
+        $second = Ticket::create(['naam' => 'Tweede', 'status' => 'open']);
+
+        $this->assertNotNull($first->ticket_number);
+        $this->assertNotNull($second->ticket_number);
+        $this->assertNotSame($first->ticket_number, $second->ticket_number);
+    }
+
+    public function test_ticket_index_shows_the_number_creation_date_and_reporter(): void
+    {
+        $user = User::factory()->create(['name' => 'Melder Man']);
+        $ticket = Ticket::create([
+            'user_id' => $user->id,
+            'naam' => 'Kapotte printer',
+            'beschrijving' => 'De printer werkt niet',
+            'status' => 'open',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('tickets.index'))
+            ->assertOk()
+            ->assertSee($ticket->ticket_number)
+            ->assertSee('Melder Man')
+            ->assertSee($ticket->created_at->format('d-m-Y'));
     }
 }

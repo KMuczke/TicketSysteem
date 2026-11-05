@@ -40,7 +40,7 @@ class TicketController extends Controller
         $ticket = Ticket::create($validated);
 
         return redirect()
-            ->route('tickets.show', $ticket)
+            ->route('tickets.index')
             ->with('success', "Ticket {$ticket->ticket_number} is aangemaakt.");
     }
 
@@ -73,7 +73,9 @@ class TicketController extends Controller
 
         $ticket->update($validated);
 
-        return redirect()->route('tickets.index')->with('success', 'Ticket bijgewerkt.');
+        return redirect()
+            ->route('tickets.index')
+            ->with('success', "Ticket {$ticket->ticket_number} is bijgewerkt.");
     }
 
     /**

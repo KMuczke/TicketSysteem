@@ -39,7 +39,7 @@ class TicketTest extends TestCase
 
         $ticket = Ticket::firstWhere('naam', 'Printer werkt niet');
 
-        $response->assertRedirect(route('tickets.show', $ticket));
+        $response->assertRedirect(route('tickets.index'));
         $this->assertDatabaseHas('tickets', ['naam' => 'Printer werkt niet']);
     }
 
@@ -77,7 +77,12 @@ class TicketTest extends TestCase
         ]);
 
         $response->assertRedirect(route('tickets.index'));
+        $response->assertSessionHas('success', "Ticket {$ticket->ticket_number} is bijgewerkt.");
         $this->assertDatabaseHas('tickets', ['naam' => 'Nieuwe naam', 'status' => 'gesloten']);
+
+        $this->get(route('tickets.index'))
+            ->assertOk()
+            ->assertSee("Ticket {$ticket->ticket_number} is bijgewerkt.");
     }
 
     public function test_authenticated_users_can_delete_a_ticket(): void
@@ -126,10 +131,10 @@ class TicketTest extends TestCase
 
         $ticket = Ticket::firstWhere('naam', 'Bevestiging test');
 
-        $response->assertRedirect(route('tickets.show', $ticket));
+        $response->assertRedirect(route('tickets.index'));
         $response->assertSessionHas('success', "Ticket {$ticket->ticket_number} is aangemaakt.");
 
-        $this->get(route('tickets.show', $ticket))
+        $this->get(route('tickets.index'))
             ->assertOk()
             ->assertSee("Ticket {$ticket->ticket_number} is aangemaakt.");
     }

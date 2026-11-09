@@ -12,11 +12,9 @@
                 {{ old('beschrijving') }}
             </flux:textarea>
 
-            <flux:select name="status" label="{{ __('Status') }}">
-                <option value="open" @selected(old('status', 'open') === 'open')>Open</option>
-                <option value="in_behandeling" @selected(old('status') === 'in_behandeling')>In behandeling</option>
-                <option value="gesloten" @selected(old('status') === 'gesloten')>Gesloten</option>
-            </flux:select>
+            <p class="text-sm text-neutral-500">
+                {{ __('Een nieuw ticket krijgt automatisch de status Nieuw.') }}
+            </p>
 
             <div class="flex justify-end gap-3">
                 <flux:button href="{{ route('tickets.index') }}" variant="ghost">

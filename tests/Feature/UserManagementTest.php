@@ -40,7 +40,7 @@ class UserManagementTest extends TestCase
             'name' => 'Verboden',
             'email' => 'verboden@example.com',
             'password' => 'password',
-            'role' => UserRole::Admin->value,
+            'role' => UserRole::Beheerder->value,
         ])->assertForbidden();
         $this->actingAs($user)->get(route('users.edit', $other))->assertForbidden();
         $this->actingAs($user)->patch(route('users.toggle-active', $other))->assertForbidden();
@@ -80,11 +80,63 @@ class UserManagementTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->assertSame(UserRole::User, $user->fresh()->role);
+        $this->assertSame(UserRole::Melder, $user->fresh()->role);
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'role' => UserRole::User->value,
+            'role' => UserRole::Melder->value,
         ]);
+    }
+
+    public function test_the_available_roles_are_melder_developer_and_beheerder(): void
+    {
+        $this->assertSame([
+            'melder' => 'Melder',
+            'developer' => 'Developer',
+            'beheerder' => 'Beheerder',
+        ], UserRole::options());
+
+        $this->assertSame('melder', UserRole::Melder->value);
+        $this->assertSame('developer', UserRole::Developer->value);
+        $this->assertSame('beheerder', UserRole::Beheerder->value);
+
+        $this->assertNotSame('', UserRole::Melder->description());
+        $this->assertNotSame('', UserRole::Developer->description());
+        $this->assertNotSame('', UserRole::Beheerder->description());
+    }
+
+    public function test_beheerders_can_assign_the_developer_role(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->post(route('users.store'), [
+            'name' => 'Nieuwe Developer',
+            'email' => 'developer@example.com',
+            'password' => 'password',
+            'role' => UserRole::Developer->value,
+            'is_active' => '1',
+        ])->assertRedirect(route('users.index'));
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'developer@example.com',
+            'role' => UserRole::Developer->value,
+        ]);
+    }
+
+    public function test_developers_can_not_manage_users(): void
+    {
+        $developer = User::factory()->developer()->create();
+        $other = User::factory()->create();
+
+        $this->actingAs($developer)->get(route('users.create'))->assertForbidden();
+        $this->actingAs($developer)->get(route('users.edit', $other))->assertForbidden();
+        $this->actingAs($developer)->put(route('users.update', $other), [
+            'name' => $other->name,
+            'email' => $other->email,
+            'role' => UserRole::Developer->value,
+            'is_active' => '1',
+        ])->assertForbidden();
+
+        $this->assertSame(UserRole::Melder, $other->fresh()->role);
     }
 
     public function test_admins_can_view_the_create_user_form(): void
@@ -110,7 +162,7 @@ class UserManagementTest extends TestCase
             'name' => 'Nieuwe Beheerder',
             'email' => 'nieuw@example.com',
             'password' => 'password',
-            'role' => UserRole::Admin->value,
+            'role' => UserRole::Beheerder->value,
             'is_active' => '1',
         ]);
 
@@ -118,7 +170,7 @@ class UserManagementTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'email' => 'nieuw@example.com',
-            'role' => UserRole::Admin->value,
+            'role' => UserRole::Beheerder->value,
             'is_active' => true,
         ]);
     }
@@ -131,12 +183,12 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($admin)->put(route('users.update', $user), [
             'name' => $user->name,
             'email' => $user->email,
-            'role' => UserRole::Admin->value,
+            'role' => UserRole::Beheerder->value,
             'is_active' => '1',
         ]);
 
         $response->assertRedirect(route('users.index'));
-        $this->assertSame(UserRole::Admin, $user->fresh()->role);
+        $this->assertSame(UserRole::Beheerder, $user->fresh()->role);
     }
 
     public function test_admins_can_deactivate_a_user(): void
@@ -171,11 +223,11 @@ class UserManagementTest extends TestCase
         $this->actingAs($user)->put(route('users.update', $other), [
             'name' => $other->name,
             'email' => $other->email,
-            'role' => UserRole::Admin->value,
+            'role' => UserRole::Beheerder->value,
             'is_active' => '1',
         ])->assertForbidden();
 
-        $this->assertSame(UserRole::User, $other->fresh()->role);
+        $this->assertSame(UserRole::Melder, $other->fresh()->role);
     }
 
     public function test_admins_can_not_deactivate_themselves(): void
@@ -196,11 +248,11 @@ class UserManagementTest extends TestCase
         $this->actingAs($admin)->put(route('users.update', $admin), [
             'name' => $admin->name,
             'email' => $admin->email,
-            'role' => UserRole::User->value,
+            'role' => UserRole::Melder->value,
             'is_active' => '1',
         ])->assertSessionHasErrors('role');
 
-        $this->assertSame(UserRole::Admin, $admin->fresh()->role);
+        $this->assertSame(UserRole::Beheerder, $admin->fresh()->role);
     }
 
     public function test_deactivating_a_user_keeps_existing_tickets(): void
@@ -209,7 +261,7 @@ class UserManagementTest extends TestCase
         Ticket::create([
             'naam' => 'Ticket voor gedeactiveerde gebruiker',
             'beschrijving' => 'Moet bewaard blijven',
-            'status' => 'open',
+            'status' => 'nieuw',
         ]);
 
         $user = User::factory()->create();
@@ -234,4 +286,3 @@ class UserManagementTest extends TestCase
             ->assertSessionHasErrorsIn('email');
     }
 }
-

@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => UserRole::User,
+            'role' => UserRole::Melder,
             'is_active' => true,
             'remember_token' => Str::random(10),
             'two_factor_secret' => null,
@@ -45,7 +45,27 @@ class UserFactory extends Factory
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => UserRole::Admin,
+            'role' => UserRole::Beheerder,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a developer.
+     */
+    public function developer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Developer,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a melder.
+     */
+    public function melder(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Melder,
         ]);
     }
 

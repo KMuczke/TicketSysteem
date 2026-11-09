@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\TicketStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -53,11 +55,27 @@ class User extends Authenticatable implements PasskeyUser
     }
 
     /**
-     * Determine whether the user is an administrator.
+     * Determine whether the user is a beheerder (administrator).
      */
     public function isAdmin(): bool
     {
-        return $this->role === UserRole::Admin;
+        return $this->role === UserRole::Beheerder;
+    }
+
+    /**
+     * Determine whether the user is a developer.
+     */
+    public function isDeveloper(): bool
+    {
+        return $this->role === UserRole::Developer;
+    }
+
+    /**
+     * Determine whether the user is a melder.
+     */
+    public function isMelder(): bool
+    {
+        return $this->role === UserRole::Melder;
     }
 
     /**
@@ -66,6 +84,24 @@ class User extends Authenticatable implements PasskeyUser
     public function isActive(): bool
     {
         return (bool) $this->is_active;
+    }
+
+    /**
+     * The tickets that are assigned to this user as a developer.
+     */
+    public function assignedTickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class, 'assignee_id');
+    }
+
+    /**
+     * Determine whether the developer already has a ticket under treatment.
+     */
+    public function hasActiveAssignedTicket(): bool
+    {
+        return $this->assignedTickets()
+            ->where('status', '!=', TicketStatus::Gesloten->value)
+            ->exists();
     }
 
     /**

@@ -78,7 +78,7 @@ class UserController extends Controller
 
         if ($user->is($request->user())) {
             // Prevent an administrator from removing their own rights.
-            if ($validated['role'] !== UserRole::Admin->value) {
+            if ($validated['role'] !== UserRole::Beheerder->value) {
                 return back()
                     ->withErrors(['role' => 'Je kunt je eigen beheerdersrol niet verwijderen.'])
                     ->withInput();

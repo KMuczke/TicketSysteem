@@ -18,6 +18,12 @@
                 @endforeach
             </flux:select>
 
+            <div class="flex flex-col gap-1 text-sm text-neutral-500">
+                @foreach (\App\Enums\UserRole::cases() as $role)
+                    <p><span class="font-medium text-neutral-700 dark:text-neutral-300">{{ $role->label() }}</span> &ndash; {{ $role->description() }}</p>
+                @endforeach
+            </div>
+
             <flux:checkbox name="is_active" value="1" :label="__('Actief')"
                            :checked="old('is_active', $user->isActive())"
                            :disabled="$user->is(auth()->user())" />

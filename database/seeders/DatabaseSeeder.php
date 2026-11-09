@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
 
         $admin = User::firstOrNew(['email' => 'test@example.com']);
         $admin->name = 'Test User';
-        $admin->role = UserRole::Admin;
+        $admin->role = UserRole::Beheerder;
         $admin->is_active = true;
 
         if (! $admin->exists) {

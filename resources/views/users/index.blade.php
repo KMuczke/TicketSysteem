@@ -42,7 +42,7 @@
                             <td class="px-4 py-3">{{ $user->name }}</td>
                             <td class="px-4 py-3">{{ $user->email }}</td>
                             <td class="px-4 py-3">
-                                <flux:badge color="{{ $user->isAdmin() ? 'purple' : 'zinc' }}" size="sm">
+                                <flux:badge color="{{ $user->role->color() }}" size="sm">
                                     {{ $user->role->label() }}
                                 </flux:badge>
                             </td>

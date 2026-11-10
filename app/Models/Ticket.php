@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,10 +16,13 @@ class Ticket extends Model
     protected $fillable = [
         'user_id',
         'assignee_id',
+        'application_id',
         'ticket_number',
         'naam',
         'beschrijving',
         'status',
+        'categorie',
+        'prioriteit',
     ];
 
     /**
@@ -29,6 +33,14 @@ class Ticket extends Model
         static::creating(function (Ticket $ticket) {
             if (blank($ticket->status)) {
                 $ticket->status = TicketStatus::Nieuw->value;
+            }
+
+            if (blank($ticket->categorie)) {
+                $ticket->categorie = Category::defaultSlug();
+            }
+
+            if (blank($ticket->prioriteit)) {
+                $ticket->prioriteit = TicketPriority::Normaal->value;
             }
         });
 
@@ -50,6 +62,8 @@ class Ticket extends Model
                 'naam' => __('Naam'),
                 'beschrijving' => __('Beschrijving'),
                 'status' => __('Status'),
+                'categorie' => __('Categorie'),
+                'prioriteit' => __('Prioriteit'),
             ];
 
             foreach ($fields as $field => $label) {
@@ -90,6 +104,38 @@ class Ticket extends Model
     public function statusColor(): string
     {
         return $this->statusEnum()?->color() ?? 'zinc';
+    }
+
+    /**
+     * A human readable label for a category.
+     */
+    public static function categoryLabel(?string $category): string
+    {
+        return Category::labelFor($category);
+    }
+
+    /**
+     * The badge color that fits the category.
+     */
+    public function categoryColor(): string
+    {
+        return Category::colorFor($this->categorie);
+    }
+
+    /**
+     * A human readable label for a priority.
+     */
+    public static function priorityLabel(?string $priority): string
+    {
+        return TicketPriority::tryFrom((string) $priority)?->label() ?? (string) $priority;
+    }
+
+    /**
+     * The badge color that fits the priority.
+     */
+    public function priorityColor(): string
+    {
+        return TicketPriority::tryFrom((string) $this->prioriteit)?->color() ?? 'zinc';
     }
 
     /**
@@ -191,6 +237,14 @@ class Ticket extends Model
     }
 
     /**
+     * Determine whether the given user may change the category and priority.
+     */
+    public function isClassificationEditableBy(User $user): bool
+    {
+        return $user->isDeveloper() || $user->isAdmin();
+    }
+
+    /**
      * Get the status transitions the given user may perform right now.
      *
      * @return array<int, TicketStatus>
@@ -207,6 +261,22 @@ class Ticket extends Model
             $current->allowedTransitions(),
             fn (TicketStatus $status) => $status !== TicketStatus::Toegewezen
         ));
+    }
+
+    /**
+     * The application or website this ticket relates to.
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    /**
+     * The category of the ticket.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'categorie', 'slug');
     }
 
     /**

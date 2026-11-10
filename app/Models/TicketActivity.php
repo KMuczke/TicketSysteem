@@ -85,35 +85,42 @@ class TicketActivity extends Model
             'naam' => __('Naam'),
             'beschrijving' => __('Beschrijving'),
             'status' => __('Status'),
+            'categorie' => __('Categorie'),
+            'prioriteit' => __('Prioriteit'),
             default => ucfirst($this->field),
         };
     }
 
     /**
-     * The old value, translated when it concerns the status.
+     * The old value, translated for known fields.
      */
     public function oldValueLabel(): ?string
     {
-        if ($this->old_value === null || $this->old_value === '') {
-            return null;
-        }
-
-        return $this->field === 'status'
-            ? Ticket::statusLabel($this->old_value)
-            : $this->old_value;
+        return $this->valueLabel($this->old_value);
     }
 
     /**
-     * The new value, translated when it concerns the status.
+     * The new value, translated for known fields.
      */
     public function newValueLabel(): ?string
     {
-        if ($this->new_value === null || $this->new_value === '') {
+        return $this->valueLabel($this->new_value);
+    }
+
+    /**
+     * Translate a stored value based on the changed field.
+     */
+    private function valueLabel(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
             return null;
         }
 
-        return $this->field === 'status'
-            ? Ticket::statusLabel($this->new_value)
-            : $this->new_value;
+        return match ($this->field) {
+            'status' => Ticket::statusLabel($value),
+            'categorie' => Ticket::categoryLabel($value),
+            'prioriteit' => Ticket::priorityLabel($value),
+            default => $value,
+        };
     }
 }

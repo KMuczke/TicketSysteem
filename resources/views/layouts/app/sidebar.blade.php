@@ -23,6 +23,16 @@
                     <flux:sidebar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.*')" wire:navigate>
                         {{ __('Gebruikers') }}
                     </flux:sidebar.item>
+
+                    @if (auth()->user()->isAdmin())
+                        <flux:sidebar.item icon="tag" :href="route('categories.index')" :current="request()->routeIs('categories.*')" wire:navigate>
+                            {{ __('Categorieën') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="globe-alt" :href="route('applications.index')" :current="request()->routeIs('applications.*')" wire:navigate>
+                            {{ __('Applicaties') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

@@ -111,6 +111,42 @@
                         </div>
 
                         <div>
+                            <dt class="text-sm font-medium text-neutral-500">{{ __('Categorie') }}</dt>
+                            <dd>
+                                <flux:badge color="{{ $ticket->category?->kleur ?? 'zinc' }}" size="sm">
+                                    {{ $ticket->category?->naam ?? $ticket->categorie }}
+                                </flux:badge>
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-sm font-medium text-neutral-500">{{ __('Applicatie/website') }}</dt>
+                            <dd>
+                                @if ($ticket->application)
+                                    @if ($ticket->application->url)
+                                        <a href="{{ $ticket->application->url }}" target="_blank" rel="noopener noreferrer"
+                                           class="text-blue-600 hover:underline dark:text-blue-400">
+                                            {{ $ticket->application->naam }}
+                                        </a>
+                                    @else
+                                        {{ $ticket->application->naam }}
+                                    @endif
+                                @else
+                                    &mdash;
+                                @endif
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-sm font-medium text-neutral-500">{{ __('Prioriteit') }}</dt>
+                            <dd>
+                                <flux:badge color="{{ $ticket->priorityColor() }}" size="sm">
+                                    {{ $ticket->priorityLabel($ticket->prioriteit) }}
+                                </flux:badge>
+                            </dd>
+                        </div>
+
+                        <div>
                             <dt class="text-sm font-medium text-neutral-500">{{ __('Naam') }}</dt>
                             <dd>{{ $ticket->naam }}</dd>
                         </div>
@@ -271,6 +307,36 @@
             </div>
 
             <aside class="flex flex-col gap-6">
+                @if ($ticket->isClassificationEditableBy(auth()->user()))
+                    <section class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
+                        <flux:heading size="lg">{{ __('Classificatie') }}</flux:heading>
+
+                        <form action="{{ route('tickets.classification', $ticket) }}" method="POST"
+                              class="mt-4 flex flex-col gap-4">
+                            @csrf
+                            @method('PATCH')
+
+                            <flux:select name="categorie" label="{{ __('Categorie') }}">
+                                @foreach ($categories as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('categorie', $ticket->categorie) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </flux:select>
+
+                            <flux:select name="prioriteit" label="{{ __('Prioriteit') }}">
+                                @foreach ($priorities as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('prioriteit', $ticket->prioriteit) === $value)>{{ $label }}</option>
+                                @endforeach
+                            </flux:select>
+
+                            <div>
+                                <flux:button type="submit" size="sm" variant="primary">
+                                    {{ __('Classificatie opslaan') }}
+                                </flux:button>
+                            </div>
+                        </form>
+                    </section>
+                @endif
+
                 <section class="rounded-xl border border-neutral-200 p-6 dark:border-neutral-700">
                     <flux:heading size="lg">{{ __('Geschiedenis') }}</flux:heading>
 

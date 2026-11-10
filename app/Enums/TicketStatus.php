@@ -79,6 +79,17 @@ enum TicketStatus: string
     }
 
     /**
+     * Determine whether the ticket still counts as open.
+     *
+     * Only a closed ticket is no longer open; a rejected ticket still has to
+     * be closed and therefore remains part of the open-ticket overview.
+     */
+    public function isOpen(): bool
+    {
+        return $this !== self::Gesloten;
+    }
+
+    /**
      * Get the label for the button that moves a ticket to this status.
      */
     public function actionLabel(?self $from = null): string

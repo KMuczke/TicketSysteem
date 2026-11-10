@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TicketCommentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TicketNoteController;
@@ -9,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::redirect('/', '/tickets')->name('home');
 
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 require __DIR__.'/settings.php';
@@ -19,6 +22,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::patch('tickets/{ticket}/assign', [TicketController::class, 'assign'])->name('tickets.assign');
     Route::delete('tickets/{ticket}/release', [TicketController::class, 'release'])->name('tickets.release');
     Route::patch('tickets/{ticket}/status', [TicketController::class, 'updateStatus'])->name('tickets.status');
+    Route::patch('tickets/{ticket}/classification', [TicketController::class, 'updateClassification'])->name('tickets.classification');
 
     Route::scopeBindings()->group(function () {
         Route::post('tickets/{ticket}/comments', [TicketCommentController::class, 'store'])
@@ -44,4 +48,10 @@ Route::middleware(['auth', 'active', 'admin'])->group(function () {
 
     Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::resource('users', UserController::class)->except(['index', 'show', 'destroy']);
+
+    Route::patch('categories/{category}/toggle-active', [CategoryController::class, 'toggleActive'])->name('categories.toggle-active');
+    Route::resource('categories', CategoryController::class)->except(['show', 'destroy']);
+
+    Route::patch('applications/{application}/toggle-active', [ApplicationController::class, 'toggleActive'])->name('applications.toggle-active');
+    Route::resource('applications', ApplicationController::class)->except(['show', 'destroy']);
 });

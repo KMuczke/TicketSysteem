@@ -34,6 +34,7 @@ class TicketTest extends TestCase
         $response = $this->post(route('tickets.store'), [
             'naam' => 'Printer werkt niet',
             'beschrijving' => 'De printer op de gang geeft een foutmelding.',
+            'categorie' => 'storing',
         ]);
 
         $ticket = Ticket::firstWhere('naam', 'Printer werkt niet');
@@ -42,6 +43,8 @@ class TicketTest extends TestCase
         $this->assertDatabaseHas('tickets', [
             'naam' => 'Printer werkt niet',
             'status' => 'nieuw',
+            'categorie' => 'storing',
+            'prioriteit' => 'normaal',
         ]);
     }
 
@@ -227,6 +230,7 @@ class TicketTest extends TestCase
         $this->post(route('tickets.store'), [
             'naam' => 'Nieuwe melding',
             'beschrijving' => 'Iets is kapot',
+            'categorie' => 'bug',
         ]);
 
         $ticket = Ticket::firstWhere('naam', 'Nieuwe melding');
@@ -245,6 +249,7 @@ class TicketTest extends TestCase
         $response = $this->post(route('tickets.store'), [
             'naam' => 'Bevestiging test',
             'beschrijving' => 'Controle',
+            'categorie' => 'vraag',
         ]);
 
         $ticket = Ticket::firstWhere('naam', 'Bevestiging test');
